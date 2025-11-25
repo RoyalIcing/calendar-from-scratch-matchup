@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <title>Calendar: Canvas</title>
+  <style>
+    :root {
+      font-family: system-ui, sans-serif;
+      font-size: calc(max(100%, min(2vw, 150%)));
+      line-height: 1.5;
+      background: color-mix(in srgb, crimson 3%, white);
+    }
+    body {
+      margin: 1lh;
+    }
+    calendar-canvas {
+      max-width: min-content;
+      margin: auto;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+
+      &:hover {
+        box-shadow: 0 0 1px 1px blue;
+      }
+    }
+  </style>
+  <script type="module">
+    class CalendarCanvas extends HTMLElement {
+      connectedCallback() {
+        const lh = parseFloat(window.getComputedStyle(this).lineHeight);
+
+        const dpr = (this.ownerDocument.defaultView || window).devicePixelRatio;
+
+        const canvas = this.ownerDocument.createElement("canvas");
+        this.appendChild(canvas);
+
+        {
+          const c = canvas.getContext("2d");
+          c.font = "1em system-ui";
+
+          const measure0 = c.measureText("0");
+          console.log(measure0);
+          var ch = measure0.width;
+          // var lh = measure0.emHeightAscent + measure0.emHeightDescent;
+          // var lh =
+          //   measure0.fontBoundingBoxAscent + measure0.fontBoundingBoxDescent;
+          console.log(lh);
+
+          canvas.width = 56 * ch * dpr;
+          canvas.height = 6 * lh * dpr;
+          canvas.style.width = 56 * ch + "px";
+          canvas.style.height = 6 * lh + "px";
+        }
+
+        const c = canvas.getContext("2d");
+        c.font = "1em system-ui";
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+
+        c.scale(dpr, dpr);
+        // canvas.style.zoom = "0.5";
+        // canvas.style.transform = "scale(0.5)";
+
+        c.fillStyle = "crimson";
+        c.fillText("Monday", 4 * ch, 0.5 * lh);
+        c.fillText("Tuesday", 12 * ch, 0.5 * lh);
+        c.fillText("Wednesday", 20 * ch, 0.5 * lh);
+        c.fillText("Thursday", 28 * ch, 0.5 * lh);
+        c.fillText("Friday", 36 * ch, 0.5 * lh);
+        c.fillText("Saturday", 44 * ch, 0.5 * lh);
+        c.fillText("Sunday", 52 * ch, 0.5 * lh);
+
+        c.strokeStyle = "crimson";
+        c.beginPath();
+        c.moveTo(0, lh);
+        c.lineTo(100_000_000, lh);
+        c.stroke();
+        c.moveTo(0, 2 * lh);
+        c.lineTo(100_000_000, 2 * lh);
+        c.stroke();
+        c.moveTo(0, 3 * lh);
+        c.lineTo(100_000_000, 3 * lh);
+        c.stroke();
+        c.moveTo(0, 4 * lh);
+        c.lineTo(100_000_000, 4 * lh);
+        c.stroke();
+        c.moveTo(0, 5 * lh);
+        c.lineTo(100_000_000, 5 * lh);
+        c.stroke();
+
+        c.fillStyle = "black";
+        for (let day = 1; day <= 31; day++) {
+          c.fillText(
+            `${day}`,
+            (4 + 8 * ((day - 1) % 7)) * ch,
+            (1.5 + Math.floor((day - 1) / 7)) * lh
+          );
+        }
+      }
+    }
+    customElements.define("calendar-canvas", CalendarCanvas);
+  </script>
+  <body>
+    <calendar-canvas></calendar-canvas>
+  </body>
+</html>
