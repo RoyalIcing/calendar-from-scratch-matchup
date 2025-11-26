@@ -101,6 +101,56 @@
       return ((weekday + 5) % 7) + 1;
     }
 
+    function* renderWeekRows(d, year, month) {
+      let row = d.createElement("tr");
+
+      const firstWeekday = dayOfWeek(year, month, 1);
+      if (firstWeekday > 1) {
+        const cell = d.createElement("td");
+        cell.colSpan = firstWeekday - 1;
+        row.appendChild(cell);
+      }
+
+      const totalDays = daysInMonth(year, month);
+
+      for (let day = 1; day <= totalDays; day++) {
+        const weekday = dayOfWeek(year, month, day);
+        if (weekday === 1 && day !== 1) {
+          if (row) yield row;
+          row = d.createElement("tr");
+        }
+
+        const cell = d.createElement("td");
+        cell.textContent = `${day}`;
+        row.append(cell);
+      }
+
+      yield row;
+    }
+
+    class CalendarState {
+      constructor(year, month) {
+        Object.freeze(Object.assign(this, { year, month }));
+      }
+
+      previous() {
+        const year = this.year - (this.month === 1 ? 1 : 0);
+        const month = this.month === 1 ? 12 : this.month - 1;
+        return new CalendarState(year, month);
+      }
+
+      next() {
+        const year = this.year + (this.month === 12 ? 1 : 0);
+        const month = this.month === 12 ? 1 : this.month + 1;
+        return new CalendarState(year, month);
+      }
+    }
+
+    const monthYearFormatter = new Intl.DateTimeFormat(undefined, {
+      month: "long",
+      year: "numeric",
+    });
+
     class CalendarTable extends HTMLElement {
       connectedCallback() {
         if (this.querySelector("table")) return;
@@ -110,51 +160,22 @@
         const month = today.getMonth() + 1;
         const todayDay = today.getDate();
 
+        const state = new CalendarState(year, month);
+        this.state = state;
+
         const d = this.ownerDocument;
-        const tbody = d.createElement("tbody");
-        let row = d.createElement("tr");
-
-        const firstWeekday = dayOfWeek(year, month, 1);
-        if (firstWeekday > 1) {
-          const cell = d.createElement("td");
-          cell.colSpan = firstWeekday - 1;
-          row.appendChild(cell);
-        }
-
-        const totalDays = daysInMonth(today.getMonth() + 1);
-        const todayWeekday = dayOfWeek(year, month, todayDay);
-
-        for (let day = 1; day <= totalDays; day++) {
-          const weekday = dayOfWeek(year, month, day);
-          if (weekday === 1 && day !== 1) {
-            if (row) tbody.appendChild(row);
-            row = d.createElement("tr");
-          }
-
-          const cell = d.createElement("td");
-          cell.textContent = `${day}`;
-          row.append(cell);
-        }
-
         const table = d.createElement("table");
+        const tbody = d.createElement("tbody");
 
-        const fmt = new Intl.DateTimeFormat(undefined, {
-          month: "long",
-          year: "numeric",
-        });
-        const captionText = fmt.format(new Date(year, month - 1));
-
-        const thead = d
-          .querySelector("template#calendar-table-thead")
+        const preamble = d
+          .querySelector("template#calendar-table-preamble")
           .content.cloneNode(true);
 
-        thead
-          .querySelector("slot[name=monthYear]")
-          .replaceChildren(captionText);
-
-        table.append(thead, tbody);
+        table.append(preamble, tbody);
 
         this.append(table);
+
+        this.update();
 
         this.addEventListener("click", this);
       }
@@ -163,16 +184,30 @@
         this.removeEventListener("click", this);
       }
 
+      update() {
+        const { year, month } = this.state;
+
+        const captionText = monthYearFormatter.format(
+          new Date(year, month - 1)
+        );
+
+        this.querySelector("slot[name=monthYear]").replaceChildren(captionText);
+
+        this.querySelector("tbody").replaceChildren(
+          ...renderWeekRows(this.ownerDocument, year, month)
+        );
+      }
+
       handleEvent(event) {
-        if (event.type === "click") {
-          const button = event.target.closest("button");
-          if (button) {
-            if (button.name === "previous") {
-              console.log("PREVIOUS");
-            } else if (button.name === "next") {
-              console.log("NEXT");
-            }
+        const button = event.target.closest("button");
+        if (button && event.type === "click") {
+          if (button.name === "previous") {
+            this.state = this.state.previous();
+          } else if (button.name === "next") {
+            this.state = this.state.next();
           }
+
+          this.update();
         }
       }
     }
@@ -299,7 +334,7 @@
         <path d="m9 18 6-6-6-6" />
       </svg>
     </template>
-    <template id="calendar-table-thead">
+    <template id="calendar-table-preamble">
       <caption>
         <button type="button" name="previous">
           <svg
