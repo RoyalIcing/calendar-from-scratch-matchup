@@ -117,6 +117,15 @@
       }
     }
 
+    const monthYearFormatter = new Intl.DateTimeFormat(undefined, {
+      month: "long",
+      year: "numeric",
+    });
+
+    const weekdayFormatter = new Intl.DateTimeFormat(undefined, {
+      weekday: "short",
+    });
+
     function renderCalendar(canvas, year, month, { lh, dpr }) {
       const firstWeekday = dayOfWeek(year, month, 1);
       const totalDays = daysInMonth(year, month);
@@ -128,11 +137,12 @@
         c.font = fontBase;
         ch = c.measureText("0").width;
 
+        const columns = 2 * 0.5 + 4 * 7;
         const lineCount = totalWeeks + 1;
-        canvas.width = 36 * ch * dpr;
+        canvas.width = columns * ch * dpr;
         canvas.height = lineCount * lh * dpr;
         if (dpr > 1) {
-          canvas.style.width = "36ch";
+          canvas.style.width = `${columns}ch`;
           canvas.style.height = `${lineCount}lh`;
         }
       }
@@ -146,14 +156,16 @@
 
       {
         c.font = fontItalic;
+        c.textAlign = "center";
         c.fillStyle = "crimson";
-        c.fillText("Mon", 3 * ch, 0.5 * lh);
-        c.fillText("Tue", 8 * ch, 0.5 * lh);
-        c.fillText("Wed", 13 * ch, 0.5 * lh);
-        c.fillText("Thu", 18 * ch, 0.5 * lh);
-        c.fillText("Fri", 23 * ch, 0.5 * lh);
-        c.fillText("Sat", 28 * ch, 0.5 * lh);
-        c.fillText("Sun", 33 * ch, 0.5 * lh);
+
+        for (let weekday = 1; weekday <= 7; weekday++) {
+          c.fillText(
+            weekdayFormatter.format(new Date(2000, 0, 2 + weekday)),
+            (2.5 + 4 * (weekday - 1)) * ch,
+            0.5 * lh
+          );
+        }
       }
 
       {
@@ -169,6 +181,7 @@
 
       {
         c.font = fontBase;
+        c.textAlign = "center";
         c.fillStyle = "white";
 
         for (let day = 1; day <= totalDays; day++) {
@@ -176,17 +189,12 @@
 
           c.fillText(
             `${day}`,
-            (3 + 5 * ((day + firstWeekday - 2) % 7)) * ch,
+            (2.5 + 4 * ((day + firstWeekday - 2) % 7)) * ch,
             (0.5 + weekOffset) * lh
           );
         }
       }
     }
-
-    const monthYearFormatter = new Intl.DateTimeFormat(undefined, {
-      month: "long",
-      year: "numeric",
-    });
 
     class CalendarCanvas extends HTMLElement {
       connectedCallback() {
