@@ -136,7 +136,9 @@
 
     class CalendarState {
       constructor(year, month) {
-        Object.freeze(Object.assign(this, { year, month }));
+        this.year = year;
+        this.month = month;
+        Object.freeze(this);
       }
 
       previous() {

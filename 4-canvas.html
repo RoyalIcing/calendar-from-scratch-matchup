@@ -3,6 +3,12 @@
   <meta charset="utf-8" />
   <title>Calendar: Canvas</title>
   <style>
+    * {
+      font-size: 1em;
+      font-weight: 400;
+      margin: 0;
+      padding: 0;
+    }
     :root {
       font-family: system-ui, sans-serif;
       font-size: calc(max(100%, min(2vw, 150%)));
@@ -14,14 +20,34 @@
       margin: 1lh;
     }
     calendar-canvas {
+      display: block;
       max-width: min-content;
       margin: auto;
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
       text-align: center;
 
       &:hover {
         box-shadow: 0 0 1px 1px blue;
+      }
+
+      header {
+        position: relative;
+
+        button {
+          position: absolute;
+          top: 0;
+          height: 100%;
+          font-size: 1em;
+          padding: 0;
+          color: crimson;
+          background: transparent;
+          border: 0;
+        }
+        button[name="previous"] {
+          left: 0;
+        }
+        button[name="next"] {
+          right: 0;
+        }
       }
     }
   </style>
@@ -29,36 +55,96 @@
     const fontBase = "1em system-ui";
     const fontItalic = `italic ${fontBase}`;
 
-    class CalendarCanvas extends HTMLElement {
-      connectedCallback() {
-        const d = this.ownerDocument;
-        const w = d.defaultView || window;
+    function isLeapYear(year) {
+      return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+    }
 
-        const lh = parseFloat(w.getComputedStyle(this).lineHeight);
-        const dpr = w.devicePixelRatio;
+    function daysInMonth(year, month) {
+      switch (month) {
+        case 2:
+          return 28 + (isLeapYear(year) ? 1 : 0);
+        case 4:
+        case 6:
+        case 9:
+        case 11:
+          return 30;
+        default:
+          return 31;
+      }
+    }
 
-        const canvas = d.createElement("canvas");
-        this.append(canvas);
+    function dayOfWeek(year, month, day) {
+      if (month < 3) {
+        month = month + 12;
+        year = year - 1;
+      }
 
-        const c = canvas.getContext("2d");
-        let ch = 16;
-        {
-          c.font = fontBase;
-          ch = c.measureText("0").width;
+      const k = year % 100;
+      const j = Math.floor(year / 100);
 
-          canvas.width = 36 * ch * dpr;
-          canvas.height = 6 * lh * dpr;
-          if (dpr > 1) {
-            canvas.style.width = 36 * ch + "px";
-            canvas.style.height = 6 * lh + "px";
-          }
+      const weekday =
+        (day +
+          Math.floor((13 * (month + 1)) / 5) +
+          k +
+          Math.floor(k / 4) +
+          Math.floor(j / 4) +
+          5 * j) %
+        7;
+
+      // Adjust the result to make Sunday 0 instead of Saturday 0
+      return ((weekday + 5) % 7) + 1;
+    }
+
+    class CalendarState {
+      constructor(year, month) {
+        this.year = year;
+        this.month = month;
+        Object.freeze(this);
+      }
+
+      previous() {
+        return new CalendarState(
+          this.year - (this.month === 1 ? 1 : 0),
+          this.month === 1 ? 12 : this.month - 1
+        );
+      }
+
+      next() {
+        return new CalendarState(
+          this.year + (this.month === 12 ? 1 : 0),
+          this.month === 12 ? 1 : this.month + 1
+        );
+      }
+    }
+
+    function renderCalendar(canvas, year, month, { lh, dpr }) {
+      const firstWeekday = dayOfWeek(year, month, 1);
+      const totalDays = daysInMonth(year, month);
+      const totalWeeks = Math.ceil((totalDays + firstWeekday - 1) / 7);
+
+      const c = canvas.getContext("2d");
+      let ch = 16;
+      {
+        c.font = fontBase;
+        ch = c.measureText("0").width;
+
+        const lineCount = totalWeeks + 1;
+        canvas.width = 36 * ch * dpr;
+        canvas.height = lineCount * lh * dpr;
+        if (dpr > 1) {
+          canvas.style.width = 36 * ch + "px";
+          canvas.style.height = lineCount * lh + "px";
         }
+      }
 
-        c.textAlign = "center";
-        c.textBaseline = "middle";
+      c.clearRect(0, 0, canvas.width, canvas.height);
 
-        c.scale(dpr, dpr);
+      c.textAlign = "center";
+      c.textBaseline = "middle";
 
+      c.scale(dpr, dpr);
+
+      {
         c.font = fontItalic;
         c.fillStyle = "crimson";
         c.fillText("Mon", 3 * ch, 0.5 * lh);
@@ -68,38 +154,131 @@
         c.fillText("Fri", 23 * ch, 0.5 * lh);
         c.fillText("Sat", 28 * ch, 0.5 * lh);
         c.fillText("Sun", 33 * ch, 0.5 * lh);
+      }
+
+      {
         c.strokeStyle = "crimson";
         c.beginPath();
-        c.moveTo(0, lh);
-        c.lineTo(100_000_000, lh);
-        c.stroke();
-        c.moveTo(0, 2 * lh);
-        c.lineTo(100_000_000, 2 * lh);
-        c.stroke();
-        c.moveTo(0, 3 * lh);
-        c.lineTo(100_000_000, 3 * lh);
-        c.stroke();
-        c.moveTo(0, 4 * lh);
-        c.lineTo(100_000_000, 4 * lh);
-        c.stroke();
-        c.moveTo(0, 5 * lh);
-        c.lineTo(100_000_000, 5 * lh);
-        c.stroke();
 
+        for (let week = 1; week <= totalWeeks; week++) {
+          c.moveTo(0, week * lh);
+          c.lineTo(100_000_000, week * lh);
+          c.stroke();
+        }
+      }
+
+      {
         c.font = fontBase;
         c.fillStyle = "white";
-        for (let day = 1; day <= 31; day++) {
+
+        for (let day = 1; day <= totalDays; day++) {
+          const weekOffset = 1 + Math.floor((day + firstWeekday - 2) / 7);
+
           c.fillText(
             `${day}`,
-            (3 + 5 * ((day - 1) % 7)) * ch,
-            (1.5 + Math.floor((day - 1) / 7)) * lh
+            (3 + 5 * ((day + firstWeekday - 2) % 7)) * ch,
+            (0.5 + weekOffset) * lh
           );
+        }
+      }
+    }
+
+    const monthYearFormatter = new Intl.DateTimeFormat(undefined, {
+      month: "long",
+      year: "numeric",
+    });
+
+    class CalendarCanvas extends HTMLElement {
+      connectedCallback() {
+        const today = new Date();
+        const state = new CalendarState(
+          today.getFullYear(),
+          today.getMonth() + 1
+        );
+        this.state = state;
+
+        const d = this.ownerDocument;
+        const content = d
+          .querySelector("template#calendar-canvas")
+          .content.cloneNode(true);
+
+        const canvas = d.createElement("canvas");
+        this.append(content, canvas);
+
+        this.update();
+
+        this.addEventListener("click", this);
+      }
+
+      disconnectedCallback() {
+        this.removeEventListener("click", this);
+      }
+
+      update() {
+        const { year, month } = this.state;
+
+        const d = this.ownerDocument;
+        const w = d.defaultView || window;
+        const canvas = this.querySelector("canvas");
+
+        const monthYear = monthYearFormatter.format(new Date(year, month - 1));
+        this.querySelector("h2").replaceChildren(monthYear);
+
+        const lh = parseFloat(w.getComputedStyle(this).lineHeight);
+        const dpr = w.devicePixelRatio;
+
+        renderCalendar(canvas, year, month, { lh, dpr });
+      }
+
+      handleEvent(event) {
+        const button = event.target.closest("button");
+        if (button && event.type === "click") {
+          if (button.name === "previous") {
+            this.state = this.state.previous();
+          } else if (button.name === "next") {
+            this.state = this.state.next();
+          }
+
+          this.update();
         }
       }
     }
     customElements.define("calendar-canvas", CalendarCanvas);
   </script>
   <body>
+    <template id="calendar-canvas">
+      <header>
+        <button type="button" name="previous" aria-label="Previous month">
+          <svg
+            width="1em"
+            height="1em"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </button>
+        <h2>November 2025</h2>
+        <button type="button" name="next" aria-label="Next month">
+          <svg
+            width="1em"
+            height="1em"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
+      </header>
+    </template>
     <calendar-canvas></calendar-canvas>
   </body>
 </html>

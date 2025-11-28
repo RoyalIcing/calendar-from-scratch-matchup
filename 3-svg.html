@@ -128,7 +128,7 @@
         }
 
         const text = d.createElementNS(svgURI, "text");
-        text.setAttribute("x", `${3 + 5 * (weekday - 1)}ch`);
+        text.setAttribute("x", `${3 + 5 * ((day + firstWeekday - 2) % 7)}ch`);
         text.setAttribute("y", `${weekOffset}.5lh`);
         text.textContent = `${day}`;
         weekGroup.append(text);
@@ -139,19 +139,23 @@
 
     class CalendarState {
       constructor(year, month) {
-        Object.freeze(Object.assign(this, { year, month }));
+        this.year = year;
+        this.month = month;
+        Object.freeze(this);
       }
 
       previous() {
-        const year = this.year - (this.month === 1 ? 1 : 0);
-        const month = this.month === 1 ? 12 : this.month - 1;
-        return new CalendarState(year, month);
+        return new CalendarState(
+          this.year - (this.month === 1 ? 1 : 0),
+          this.month === 1 ? 12 : this.month - 1
+        );
       }
 
       next() {
-        const year = this.year + (this.month === 12 ? 1 : 0);
-        const month = this.month === 12 ? 1 : this.month + 1;
-        return new CalendarState(year, month);
+        return new CalendarState(
+          this.year + (this.month === 12 ? 1 : 0),
+          this.month === 12 ? 1 : this.month + 1
+        );
       }
     }
 
@@ -163,10 +167,10 @@
     class CalendarSVG extends HTMLElement {
       connectedCallback() {
         const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
-
-        const state = new CalendarState(year, month);
+        const state = new CalendarState(
+          today.getFullYear(),
+          today.getMonth() + 1
+        );
         this.state = state;
 
         const content = this.ownerDocument
@@ -190,7 +194,6 @@
         const firstWeekday = dayOfWeek(year, month, 1);
         const totalDays = daysInMonth(year, month);
         const totalWeeks = Math.ceil((totalDays + firstWeekday - 1) / 7);
-        console.log(totalWeeks);
         this.querySelector("svg[data-calendar]").setAttribute(
           "height",
           `${totalWeeks + 1}lh`
