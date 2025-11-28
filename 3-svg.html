@@ -128,8 +128,9 @@
         }
 
         const text = d.createElementNS(svgURI, "text");
-        text.setAttribute("x", `${3 + 5 * ((day + firstWeekday - 2) % 7)}ch`);
+        text.setAttribute("x", `${2.5 + 4 * ((day + firstWeekday - 2) % 7)}ch`);
         text.setAttribute("y", `${weekOffset}.5lh`);
+        text.setAttribute("dy", "2");
         text.textContent = `${day}`;
         weekGroup.append(text);
       }
@@ -255,28 +256,28 @@
           </svg>
         </button>
       </header>
-      <svg width="36ch" height="6lh" data-calendar>
+      <svg width="29ch" height="6lh" data-calendar>
         <title>Calendar for November 2025</title>
         <g fill="crimson">
-          <text x="3ch" y="0.5lh">
+          <text x="2.5ch" y="0.5lh" dy="2">
             <tspan font-style="italic">Mon</tspan>
           </text>
-          <text x="8ch" y="0.5lh">
+          <text x="6.5ch" y="0.5lh" dy="2">
             <tspan font-style="italic">Tue</tspan>
           </text>
-          <text x="13ch" y="0.5lh">
+          <text x="10.5ch" y="0.5lh" dy="2">
             <tspan font-style="italic">Wed</tspan>
           </text>
-          <text x="18ch" y="0.5lh">
+          <text x="14.5ch" y="0.5lh" dy="2">
             <tspan font-style="italic">Thu</tspan>
           </text>
-          <text x="23ch" y="0.5lh">
+          <text x="18.5ch" y="0.5lh" dy="2">
             <tspan font-style="italic">Fri</tspan>
           </text>
-          <text x="28ch" y="0.5lh">
+          <text x="22.5ch" y="0.5lh" dy="2">
             <tspan font-style="italic">Sat</tspan>
           </text>
-          <text x="33ch" y="0.5lh">
+          <text x="26.5ch" y="0.5lh" dy="2">
             <tspan font-style="italic">Sun</tspan>
           </text>
           <line y1="1lh" x2="100%" y2="1lh" fill="none" stroke="crimson" />
