@@ -170,8 +170,6 @@
 
     class CalendarTable extends HTMLElement {
       connectedCallback() {
-        if (this.querySelector("table")) return;
-
         const today = new Date();
         const year = today.getFullYear();
         const month = today.getMonth() + 1;
@@ -180,17 +178,11 @@
         const state = new CalendarState(year, month);
         this.state = state;
 
-        const d = this.ownerDocument;
-        const table = d.createElement("table");
-        const tbody = d.createElement("tbody");
-
-        const preamble = d
-          .querySelector("template#calendar-table-preamble")
+        const content = this.ownerDocument
+          .querySelector("template#calendar-table")
           .content.cloneNode(true);
 
-        table.append(preamble, tbody);
-
-        this.append(table);
+        this.append(content);
 
         this.update();
 
@@ -231,7 +223,7 @@
     customElements.define("calendar-table", CalendarTable);
   </script>
   <body>
-    <calendar-table>
+    <template id="calendar-table">
       <table>
         <caption>
           <button type="button" name="previous">
@@ -248,7 +240,7 @@
               <path d="m15 18-6-6 6-6" />
             </svg>
           </button>
-          November 2025
+          <h2>November 2025</h2>
           <button type="button" name="next">
             <svg
               width="1em"
@@ -319,78 +311,6 @@
           </tr>
         </tbody>
       </table>
-    </calendar-table>
-    <template id="icons">
-      <svg
-        id="previous"
-        width="1em"
-        height="1em"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="m15 18-6-6 6-6" />
-      </svg>
-      <svg
-        id="next"
-        width="1em"
-        height="1em"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="m9 18 6-6-6-6" />
-      </svg>
-    </template>
-    <template id="calendar-table-preamble">
-      <caption>
-        <button type="button" name="previous">
-          <svg
-            width="1em"
-            height="1em"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="m15 18-6-6 6-6" />
-          </svg>
-        </button>
-        <h2>November 2025</h2>
-        <button type="button" name="next">
-          <svg
-            width="1em"
-            height="1em"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-        </button>
-      </caption>
-      <thead>
-        <tr>
-          <th>Mon</th>
-          <th>Tue</th>
-          <th>Wed</th>
-          <th>Thu</th>
-          <th>Fri</th>
-          <th>Sat</th>
-          <th>Sun</th>
-        </tr>
-      </thead>
     </template>
     <calendar-table></calendar-table>
   </body>
