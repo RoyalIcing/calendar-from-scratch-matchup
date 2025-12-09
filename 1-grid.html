@@ -76,7 +76,7 @@
     function daysInMonth(year, month) {
       switch (month) {
         case 2:
-          return 28 + (isLeapYear(year) ? 1 : 0);
+          return isLeapYear(year) ? 29 : 28;
         case 4:
         case 6:
         case 9:
