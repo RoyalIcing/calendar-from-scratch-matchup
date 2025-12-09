@@ -56,7 +56,7 @@
         grid-template-columns: repeat(7, 1fr);
 
         > * {
-          padding: 0 0.5em;
+          min-width: 4ch;
           border-bottom: 1px solid crimson;
           margin-bottom: -1px;
         }
@@ -93,7 +93,16 @@
         year = year - 1;
       }
 
-      return (day + Math.floor(2.6 * (month + 1)) + year + Math.floor(year / 4) - Math.floor(year / 100) + Math.floor(year / 400) + 6) % 7 || 7;
+      return (
+        (day +
+          Math.floor(2.6 * (month + 1)) +
+          year +
+          Math.floor(year / 4) -
+          Math.floor(year / 100) +
+          Math.floor(year / 400) +
+          6) %
+          7 || 7
+      );
     }
 
     function* renderDays(d, year, month) {
