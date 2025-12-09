@@ -1,4 +1,4 @@
-# Calendar: From Scratch Match
+# Calendar: Matchups from Scratch
 
 We render an interactive calendar 5 different ways: CSS grid, table, SVG, canvas, terminal.
 
