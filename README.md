@@ -1,2 +1,11 @@
-# calendar-from-scratch-matchup
-We render a calendar in 5 different ways: CSS grid, table, SVG, canvas, console
+# Calendar: From Scratch Match
+
+We render an interactive calendar 5 different ways: CSS grid, table, SVG, canvas, terminal.
+
+```bash
+open 1-grid.html
+open 2-table.html
+open 3-svg.html
+open 4-canvas.html
+node 5-cli.js
+```
