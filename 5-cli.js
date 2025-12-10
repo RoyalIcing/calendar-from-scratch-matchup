@@ -80,6 +80,10 @@ class CalendarState {
       ? new CalendarState(this.year + 1, 1)
       : new CalendarState(this.year, this.month + 1);
   }
+
+  get date() {
+    return new Date(this.year, this.month - 1);
+  }
 }
 
 const today = new Date();
@@ -122,9 +126,9 @@ function updateDisplay() {
   console.log('Use arrow keys: ← for previous month, → for next month');
   console.log('Press Ctrl+C to exit\n');
 
-  const { year, month } = state;
+  const { year, month, date } = state;
 
-  const monthYear = monthYearFormatter.format(new Date(year, month - 1));
+  const monthYear = monthYearFormatter.format(date);
   console.log(" ".repeat(14).slice(Math.floor(monthYear.length / 2)) + monthYear);
 
   console.log([...renderDays(year, month)].join(""))
