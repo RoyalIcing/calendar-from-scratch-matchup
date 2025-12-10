@@ -157,6 +157,10 @@
           ? new CalendarState(this.year + 1, 1)
           : new CalendarState(this.year, this.month + 1);
       }
+
+      get date() {
+        return new Date(this.year, this.month - 1);
+      }
     }
 
     const monthYearFormatter = new Intl.DateTimeFormat(undefined, {
@@ -189,13 +193,11 @@
       }
 
       update() {
-        const { year, month } = this.state;
+        const { year, month, date } = this.state;
 
-        const captionText = monthYearFormatter.format(
-          new Date(year, month - 1)
+        this.querySelector("h2").replaceChildren(
+          monthYearFormatter.format(date)
         );
-
-        this.querySelector("h2").replaceChildren(captionText);
 
         this.querySelector("tbody").replaceChildren(
           ...renderWeekRows(this.ownerDocument, year, month)

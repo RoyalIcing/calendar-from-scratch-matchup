@@ -152,6 +152,10 @@
           ? new CalendarState(this.year + 1, 1)
           : new CalendarState(this.year, this.month + 1);
       }
+
+      get date() {
+        return new Date(this.year, this.month - 1);
+      }
     }
 
     const monthYearFormatter = new Intl.DateTimeFormat(undefined, {
@@ -184,7 +188,7 @@
       }
 
       update() {
-        const { year, month } = this.state;
+        const { year, month, date } = this.state;
 
         const firstWeekday = dayOfWeek(year, month, 1);
         const totalDays = daysInMonth(year, month);
@@ -194,8 +198,9 @@
           `${totalWeeks + 1}lh`
         );
 
-        const monthYear = monthYearFormatter.format(new Date(year, month - 1));
-        this.querySelector("h2").replaceChildren(monthYear);
+        this.querySelector("h2").replaceChildren(
+          monthYearFormatter.format(date)
+        );
 
         this.querySelector("g[data-days]").replaceChildren(
           ...renderDays(this.ownerDocument, year, month)
