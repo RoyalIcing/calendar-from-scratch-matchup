@@ -2,6 +2,7 @@
 <html lang="en">
   <meta charset="utf-8" />
   <title>Calendar: Grid</title>
+
   <style>
     * {
       font-size: 1em;
@@ -11,7 +12,7 @@
     }
     :root {
       font-family: system-ui, sans-serif;
-      font-size: calc(max(100%, min(2vw, 150%)));
+      font-size: calc(clamp(100%, 4vw, 150%));
       line-height: 1.5;
       color: white;
       background: color-mix(in srgb, crimson 4%, black);
